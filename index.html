@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Phrases en pictogrammes</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#2f6fed">
+<meta name="mobile-web-app-capable" content="yes">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#eef2f7;--card:#fff;--tx:#1b2430;--mut:#64748b;--bd:#dbe3ee;--ac:#2563eb;--acx:#fff;--soft:#e8f0ff;--warn:#b45309;--sh:0 1px 2px rgba(16,24,40,.06),0 8px 22px rgba(16,24,40,.07)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f141b;--card:#1a212b;--tx:#e8edf4;--mut:#93a1b4;--bd:#2b3644;--ac:#6ea0ff;--acx:#0b1220;--soft:#1f2c44;--warn:#f0b35a;--sh:0 1px 2px rgba(0,0,0,.4)}}
+:root[data-theme="dark"]{--bg:#0f141b;--card:#1a212b;--tx:#e8edf4;--mut:#93a1b4;--bd:#2b3644;--ac:#6ea0ff;--acx:#0b1220;--soft:#1f2c44;--warn:#f0b35a;--sh:0 1px 2px rgba(0,0,0,.4)}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:1000px;margin:0 auto;padding:20px 14px 48px}
+h1{font-size:1.65rem;font-weight:800;letter-spacing:-.02em;margin:0 0 4px}
+p.sub{margin:0 0 16px;color:var(--mut);font-size:.92rem}
+.panel{background:var(--card);border:1px solid var(--bd);border-radius:20px;box-shadow:var(--sh);padding:14px}
+textarea{width:100%;min-height:92px;padding:12px 14px;font:inherit;font-size:1.15rem;border:1.5px solid var(--bd);border-radius:14px;background:var(--bg);color:var(--tx);resize:vertical}
+textarea:focus,input:focus{outline:2px solid var(--ac);outline-offset:1px}
+.bar{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;margin:12px 0 0;color:var(--mut);font-size:.88rem}
+.bar label{display:flex;align-items:center;gap:6px}
+.bar .sp{flex:1}
+button{font:inherit;font-size:.92rem;border:1.5px solid var(--bd);background:var(--card);color:var(--tx);border-radius:999px;padding:7px 14px;cursor:pointer}
+button:hover{border-color:var(--ac)}
+button.p{background:var(--ac);color:var(--acx);border-color:var(--ac);font-weight:600}
+#out{background:var(--card);border:1px solid var(--bd);border-radius:20px;box-shadow:var(--sh);padding:18px;margin-top:16px;min-height:170px}
+.ln{display:flex;flex-wrap:wrap;gap:14px 12px;align-items:flex-start;margin-bottom:14px}
+.ln.gap{height:12px;margin:0}
+.c{width:var(--w,120px);background:none;border:0;border-radius:0;padding:0;text-align:center;cursor:grab;font:inherit;color:inherit;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.pic{background:#fff;border:2.5px solid #cdd7e5;border-radius:18px;height:calc(var(--w,120px) * .82);display:flex;align-items:center;justify-content:center;font-size:calc(var(--w,120px) * .5);line-height:1;transition:border-color .15s,transform .15s}
+.c:hover .pic{border-color:var(--ac);transform:translateY(-2px)}
+.pic img{max-width:100%;max-height:100%;object-fit:contain;padding:6px;pointer-events:none}
+.lbl{font-weight:700;margin-top:6px;word-break:break-word;font-size:1rem}
+.c.u .pic{border-style:dashed;color:var(--warn);font-weight:700}
+.c.drag{opacity:.25}
+.ghost{position:fixed;z-index:60;pointer-events:none;opacity:.92;transform:rotate(-3deg) scale(1.06);filter:drop-shadow(0 8px 14px rgba(0,0,0,.3))}
+#mk{position:fixed;width:5px;border-radius:3px;background:var(--ac);z-index:59;pointer-events:none;display:none}
+#fs{position:fixed;inset:0;z-index:70;background:var(--bg);display:flex;flex-direction:column;padding:env(safe-area-inset-top,0px) 12px env(safe-area-inset-bottom,0px)}
+#fs[hidden]{display:none}
+.fsbar{display:flex;gap:8px;justify-content:flex-end;padding:10px 0}
+#fsout{flex:1;overflow:auto;display:flex;flex-direction:column;justify-content:center}
+#fsout .ln{justify-content:center}
+#fsout .lbl{font-size:max(1rem,calc(var(--w,120px) * .15))}
+#fsout .c{cursor:default}
+button.mic-on{background:#dc2626;color:#fff;border-color:#dc2626}
+.empty{color:var(--mut);padding:40px 0;text-align:center}
+#saved{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 0}
+#saved span{display:inline-flex;border:1.5px solid var(--bd);border-radius:999px;background:var(--soft);overflow:hidden}
+#saved button{border:0;border-radius:0;padding:5px 12px;background:none}
+dialog{border:1px solid var(--bd);border-radius:20px;background:var(--card);color:var(--tx);padding:18px;width:min(440px,92vw)}
+dialog::backdrop{background:rgba(0,0,0,.5)}
+dialog h2{margin:0 0 10px;font-size:1.1rem}
+.row{display:flex;gap:8px;align-items:center;margin:8px 0;flex-wrap:wrap}
+input[type=text]{flex:1;min-width:0;font:inherit;font-size:1.4rem;padding:6px 10px;border:1.5px solid var(--bd);border-radius:12px;background:var(--bg);color:var(--tx)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(40px,1fr));gap:4px;max-height:150px;overflow:auto;margin:8px 0}
+.grid button{font-size:1.5rem;padding:2px;border-radius:10px}
+#arg{grid-template-columns:repeat(auto-fill,minmax(64px,1fr));max-height:190px}
+#arg img{width:100%;aspect-ratio:1;object-fit:contain;background:#fff;border-radius:8px}
+.prev{font-size:64px;text-align:center;height:80px;display:flex;align-items:center;justify-content:center}
+.prev img{max-height:76px;background:#fff;border-radius:10px;padding:3px}
+@media print{.noprint{display:none!important}body{background:#fff;color:#000}#out{border:0;box-shadow:none;padding:0}.c{break-inside:avoid}.lbl{color:#000}}
+
+/* ===== Design v2 ===== */
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;font-size:28px;background:linear-gradient(135deg,#2563eb,#7c3aed);box-shadow:0 6px 16px rgba(37,99,235,.35)}
+.brand h1{margin:0;font-size:1.7rem;line-height:1.1}
+.brand p{margin:2px 0 0;color:var(--mut);font-size:.9rem}
+.hbtn{display:flex;gap:8px}
+.hbtn button{padding:6px 12px;font-size:.84rem}
+.composer{padding:16px}
+.lab{display:block;font-weight:700;font-size:.78rem;letter-spacing:.07em;text-transform:uppercase;color:var(--mut);margin-bottom:8px}
+.acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.acts button{padding:9px 15px}
+button.big{padding:10px 22px;font-size:1rem;box-shadow:0 4px 12px rgba(37,99,235,.3)}
+button.mic-on{box-shadow:0 0 0 4px rgba(220,38,38,.25)}
+.opts{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;margin-top:14px;padding-top:12px;border-top:1px dashed var(--bd)}
+.chip{display:inline-flex;align-items:center;gap:6px;background:var(--soft);border:1.5px solid transparent;border-radius:999px;padding:5px 12px;font-size:.85rem;color:var(--tx);cursor:pointer}
+.chip:has(input:checked){border-color:var(--ac)}
+.size{display:flex;align-items:center;gap:8px;margin-left:auto;font-size:.85rem;color:var(--mut)}
+.hint{color:var(--mut);font-size:.82rem;text-align:center;margin:14px 0 0}
+#saved:empty{display:none}
+#saved{margin:14px 0 0}
+#out{background-image:radial-gradient(var(--bd) 1px,transparent 1px);background-size:22px 22px}
+@media (max-width:520px){main{padding:14px 10px 40px}.acts button{flex:1 1 calc(50% - 8px)}.acts .big{flex-basis:100%}.size{margin-left:0;width:100%}.brand h1{font-size:1.45rem}}
+@media print{#out{background:none}}
+</style>
+</head>
+<body>
+<main>
+<header class="top noprint">
+<div class="brand"><div class="logo">💬</div><div><h1>Pictos</h1><p>Écrivez, voyez, montrez.</p></div></div>
+<div class="hbtn"><button id="theme">🌓 Auto</button><button id="refresh">🔄 Mettre à jour</button></div>
+</header>
+<section class="panel noprint composer">
+<label class="lab" for="in">Votre phrase</label>
+<textarea id="in" class="noprint" placeholder="Ex. : Je veux manger une pomme à la maison" autofocus></textarea>
+<div class="acts">
+<button id="mic" class="p big">🎤 Écouter</button>
+<button id="speak">🔊 Lire</button>
+<button id="full">⛶ Plein écran</button>
+<button id="shareimg">🖼️ Image</button>
+<button id="savep">⭐ Enregistrer</button>
+<button id="print">🖨️ Imprimer</button>
+<button id="clear">Effacer</button>
+</div>
+<div class="opts">
+<label class="chip"><input type="checkbox" id="cap" checked> Mots</label>
+<label class="chip"><input type="checkbox" id="small"> Petits mots</label>
+<label class="chip" id="genl"><input type="checkbox" id="gen" checked> Images auto</label>
+<label class="size">Taille <input type="range" id="size" min="70" max="200" value="120"></label>
+</div>
+</section>
+<div id="saved" class="noprint"></div>
+<div id="out"><div class="empty">Les pictogrammes apparaîtront ici.</div></div>
+<p class="hint noprint"><b>Toucher</b> un pictogramme = changer l’image · <b>Maintenir puis glisser</b> = déplacer · <b>Entrée</b> = nouvelle ligne</p>
+<p class="sub noprint" id="stat" style="text-align:center"></p>
+</main>
+
+<div id="fs" hidden><div class="fsbar"><button id="fsmic">🎤 Écouter</button><button id="fsx">✕ Fermer</button></div><div id="fsout"></div></div>
+
+<dialog id="imgd"><h2>Image de la phrase</h2>
+<img id="imgp" alt="" style="width:100%;border-radius:12px;border:1px solid var(--bd);background:#fff">
+<div class="row" style="justify-content:flex-end"><button id="imgs" class="p">📤 Partager</button><button id="imgv">⬇ Enregistrer</button><button id="imgx">Fermer</button></div></dialog>
+
+<dialog id="dlg">
+<h2 id="dt">Changer le pictogramme</h2>
+<div class="prev" id="pv"></div>
+<div class="row"><input type="text" id="emo" placeholder="Collez un emoji…" maxlength="12">
+<input type="file" id="file" accept="image/*" style="display:none"><button id="up">Mon image</button><button id="gn">✨ Générer</button><button id="ar">🔎 ARASAAC</button></div>
+<div class="grid" id="arg" style="display:none"></div>
+<div class="grid" id="grid"></div>
+<div class="row" style="justify-content:space-between">
+<button id="rst">Rétablir</button>
+<span><button id="no">Annuler</button> <button class="p" id="ok">Enregistrer</button></span></div>
+</dialog>
+
+<script>
+// Dictionnaire : pictogramme | mots (variantes et conjugaisons séparées par des virgules)
+const D = `
+🙋|je,moi,j,me
+👉|tu,toi,te,vous
+👦|il,lui
+👧|elle
+👫|ils,elles,eux
+👨‍👩‍👧‍👦|nous,famille
+👨|papa,pere,homme,monsieur
+👩|maman,mere,femme,madame
+👶|bebe,enfant
+🧒|garcon,ami,copain
+👵|mamie,grand-mere
+👴|papi,grand-pere
+👩‍🏫|maitresse,professeur,prof,ecole
+🧑‍⚕️|docteur,medecin
+✅|oui,ok,bien,d'accord
+❌|non
+🚫|pas,jamais,interdit
+❓|quoi,comment,pourquoi,qui,quand,ou
+➕|encore,plus,aussi
+🤲|veux,veut,voulons,voulez,veulent,vouloir,donne,donner,donnes,donnez
+🍽️|manger,mange,manges,mangeons,mangez,mangent,repas,dejeuner,diner
+🥤|boire,bois,boit,buvez,boivent,boisson
+😴|dormir,dors,dort,dormons,sommeil,fatigue,fatigue
+🛏️|lit,coucher,couche
+🚶|aller,vais,vas,va,allons,allez,vont,marcher,marche,marchons
+🏃|courir,cours,court,courons,vite
+🧩|jouer,joue,joues,jouons,jouent,jeu
+📖|lire,lis,lit,livre,histoire
+✏️|ecrire,ecris,ecrit,dessiner,dessine,dessin,crayon
+👀|voir,vois,voit,voyons,regarder,regarde,regardes,regardons
+👂|ecouter,ecoute,ecoutes,entendre
+🗣️|parler,parle,parles,dire,dis,dit,appeler,appelle
+🧼|laver,lave,laves,lavons,savon,propre
+🚽|toilettes,wc,pipi,caca
+🛁|bain,baigner,douche
+👕|habiller,habille,vetement,tee-shirt,pull,t-shirt
+👟|chaussures,chaussure,baskets
+🧥|manteau,veste
+🎒|sac,cartable
+🏠|maison,chez,domicile,rentrer,rentre
+🏫|classe,ecole
+🛒|magasin,courses,acheter,achete,supermarche
+🚗|voiture,auto,conduire,route
+🚌|bus,autobus
+🚆|train
+✈️|avion,voyage
+🚲|velo
+🌳|arbre,parc,jardin,foret
+🏖️|plage,mer,vacances
+🌧️|pluie,pleut,pleuvoir
+☀️|soleil,chaud,beau,jour,ete
+❄️|neige,froid,hiver
+🌙|nuit,soir,lune
+🌅|matin
+🍎|pomme,fruit
+🍌|banane
+🍓|fraise
+🍊|orange
+🍞|pain,tartine
+🧀|fromage
+🥛|lait
+💧|eau
+🧃|jus
+🥕|carotte,legume,legumes
+🍝|pates,spaghetti
+🍚|riz
+🍟|frites,pommes-de-terre
+🍗|poulet,viande
+🐟|poisson
+🥚|oeuf,oeufs
+🍫|chocolat,bonbon,bonbons
+🍰|gateau,dessert
+🍦|glace
+🍕|pizza
+🥣|soupe,bol,petit-dejeuner
+🥄|cuillere
+🍴|fourchette,couvert
+🐶|chien
+🐱|chat
+🐴|cheval
+🐄|vache
+🐖|cochon
+🐦|oiseau
+🐠|poisson-rouge
+🧸|peluche,doudou
+⚽|ballon,foot,football
+📺|television,tele,dessin-anime
+📱|telephone,portable,tablette
+🎵|musique,chanter,chante,chanson
+🎨|peinture,peindre
+😀|content,contente,heureux,joyeux,rire,rigole
+😢|triste,pleurer,pleure,pleures
+😠|colere,fache,fachee,enerve
+😨|peur
+😮|surpris,surprise
+🤕|mal,blesse,douleur,bobo
+🤒|malade,fievre
+😋|bon,delicieux,miam
+🤢|degoutant,beurk
+❤️|aimer,aime,aimes,amour,adorer,adore
+🙏|merci,svp,stp,s'il-te-plait,s'il-vous-plait,please
+👋|bonjour,salut,coucou,bonsoir,au-revoir,aurevoir
+🛑|stop,arreter,arrete,attends,attendre
+🤝|aider,aide,aides,aidez
+😕|comprends,comprend,comprendre
+🤔|penser,pense,penses,savoir,sais,sait
+🆘|aide-moi,secours
+🔑|cle,ouvrir,ouvre
+🚪|porte,sortir,sors,sort,entrer,entre
+🪑|chaise,assis,asseoir,assieds
+🛋️|canape
+🍼|biberon
+🛍️|cadeau
+🎂|anniversaire
+🎈|ballon-baudruche,fete
+🕒|heure,temps,maintenant,vite
+📅|demain,hier,aujourd'hui,semaine,jour
+🔴|rouge
+🔵|bleu
+🟢|vert
+🟡|jaune
+⚫|noir
+⚪|blanc
+1️⃣|un,une,1
+2️⃣|deux,2
+3️⃣|trois,3
+🐘|grand,gros,gros
+🐜|petit,petite
+⬆️|haut,monter,monte,dessus
+⬇️|bas,descendre,descends,dessous
+➡️|droite,suivre
+⬅️|gauche
+🔥|brulant,feu
+🧊|glacon
+🦷|dent,dents
+🧠|tete,cerveau
+✋|main,mains
+🦶|pied,pieds
+👁️|oeil,yeux
+👃|nez
+👄|bouche
+💤|dodo
+🛠️|faire,fais,fait,faisons,faites,font,bricoler
+🧱|construire,construis,construit
+🗑️|poubelle,jeter,jette
+🌸|fleur,fleurs
+🚿|se-laver
+🏥|hopital
+🧑‍🍳|cuisiner,cuisine,cuisines
+`;
+// Petits mots masqués par défaut
+const STOP = new Set("le la les l un une des de du d et en au aux a à ce cet cette ces c qu que s n y t m".split(" ")
+  .filter(w=>!["un","une","a","m"].includes(w)).concat(["un","une"]));
+STOP.delete("un"); STOP.delete("une"); // "un/une" restent des chiffres uniquement si petits mots activés
+["un","une"].forEach(w=>STOP.add(w));
+
+const norm = s => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/œ/g,"oe").replace(/[’]/g,"'");
+const base = {};
+const D2 = `
+📅|aujourdhui,lundi,mardi,mercredi,jeudi,vendredi,samedi,dimanche,mois,annee,date
+👔|patron,chef,directeur,directrice,responsable,manager
+🏢|entreprise,societe,bureau,usine,atelier,site,batiment
+🗓️|rendez-vous,planning,calendrier,agenda
+🧑‍🤝‍🧑|client,clients
+🍽️|cantine,restaurant
+📧|mail,email,courriel,message,messages,envoyer,envoie
+📄|document,documents,papier,papiers,fichier,feuille,formulaire,facture,contrat
+✍️|signer,signe,signature,remplir
+🖨️|imprimer,imprime,imprimante,photocopier
+🚚|camion,camionnette,transport,transporter,livreur
+🔨|marteau,taper
+⚙️|machine,machines,moteur
+🔌|electricite,electrique,branche,debrancher,prise
+🔋|batterie,pile
+💡|idee,lumiere,lampe,allumer,allume
+🚨|urgent,urgence,alarme,alerte,incendie
+🧯|extincteur,feu,pompier,pompiers
+🧤|gants,gant
+🦺|gilet,chasuble
+🥽|lunettes
+😷|masque
+🩹|pansement,secourisme,infirmerie
+🚑|accident,ambulance,samu
+🧹|nettoyer,nettoie,nettoyage,balai,menage,balayer
+📥|ranger,range,rangement
+🏁|fini,finis,finit,finie,termine,terminer,fin
+▶️|commencer,commence,debut,demarrer,demarre
+⏸️|attente,patienter
+🔁|repeter,repete,repetez,refaire,recommencer
+👆|montrer,montre,montres,montrez,voici,ici
+🤟|langue-des-signes,lsf,signes,sourd,sourds,sourde,muet,muette,interprete
+📝|noter,notes,liste,rapport,compte-rendu
+🪪|badge,pointer,pointage,identite
+🌴|conge,conges,absence,absent,absente
+⏰|retard,reveil,horaire,horaires,tot,tard,ponctuel
+🔙|retour,revenir,reviens,retourner
+🅿️|parking,garer
+🛗|ascenseur
+🪜|escalier,escaliers,echelle,etage
+🚭|fumer,cigarette
+👍|bravo,super,parfait,excellent,genial,felicitations
+👎|mauvais,nul
+🤷|peut-etre,hesite
+🔊|fort,bruit,bruyant
+🔇|silence,calme
+🧾|ticket,recu
+💳|carte,cb
+4️⃣|quatre,4
+5️⃣|cinq,5
+6️⃣|six,6
+7️⃣|sept,7
+8️⃣|huit,8
+9️⃣|neuf,9
+🔟|dix,10
+`;
+(D+"\n"+D2).trim().split("\n").forEach(l=>{if(!l.includes("|"))return;const [e,ws]=l.split("|");ws.split(",").forEach(w=>{const k=norm(w.trim());if(k&&!(k in base))base[k]=e;});});
+
+let custom = {};
+try{custom = JSON.parse(localStorage.getItem("picto-custom")||"{}");}catch(e){custom={};}
+const save = ()=>{try{localStorage.setItem("picto-custom",JSON.stringify(custom));}catch(e){}};
+
+const $ = id => document.getElementById(id);
+function lookup(w){
+  const k = norm(w);
+  if(custom[k]) return custom[k];
+  const tries=[k,k.replace(/(s|x)$/,""),k.replace(/e$/,""),k.replace(/es$/,""),k.replace(/(er|ent|ons|ez)$/,"")];
+  for(const t of tries){ if(custom[t]) return custom[t]; if(libW[t]) return {t:"i",v:svgUri(wrap(LIB[libW[t]]))}; if(base[t]) return {t:"e",v:base[t]}; }
+  return null;
+}
+function words(src){
+  const txt = (src===undefined?$("in").value:src).replace(/s['’]il (te|vous) pla[iî]t/gi,"svp").replace(/au revoir/gi,"aurevoir").replace(/aujourd['’]hui/gi,"aujourdhui").replace(/d['’]accord/gi,"ok").replace(/grand[- ]m[eè]re/gi,"mamie").replace(/grand[- ]p[eè]re/gi,"papi").replace(/petit[- ]d[eé]jeuner/gi,"petit-dejeuner").replace(/[’']/g,"' ");
+  return (txt.match(/[\p{L}\p{N}-]+/gu)||[]).filter(w=>$("small").checked||!STOP.has(norm(w)));
+}
+let rows=[], rowsKey=null, noClick=0;
+function sync(){const k=$("in").value+"|"+$("small").checked; if(k!==rowsKey){rows=$("in").value.split("\n").map(l=>words(l));rowsKey=k;}}
+function card(w){
+  const p=lookup(w), b=document.createElement("button");
+  b.className="c"+(p?"":" u");
+  const pic=document.createElement("div"); pic.className="pic";
+  if(!p) pic.textContent=pending.has(norm(w))?"…":"?"; else if(p.t==="i"){const im=new Image();im.src=p.v;im.alt=w;im.draggable=false;pic.appendChild(im);} else pic.textContent=p.v;
+  b.appendChild(pic);
+  if($("cap").checked){const l=document.createElement("div");l.className="lbl";l.textContent=w;b.appendChild(l);}
+  b.onclick=()=>{ if(Date.now()<noClick)return; edit(w); };
+  return b;
+}
+function render(){
+  sync();
+  const out=$("out"); out.style.setProperty("--w",$("size").value+"px");
+  if(!rows.some(r=>r.length)){out.innerHTML='<div class="empty">Les pictogrammes apparaîtront ici.</div>';$("stat").textContent="";renderFS();return;}
+  out.innerHTML=""; let miss=0;
+  rows.forEach((r,ri)=>{
+    const rd=document.createElement("div"); rd.className="ln"+(r.length?"":" gap"); rd.dataset.r=ri;
+    r.forEach((w,wi)=>{const b=card(w); b.dataset.r=ri; b.dataset.i=wi; if(b.classList.contains("u"))miss++; rd.appendChild(b);});
+    out.appendChild(rd);
+  });
+  $("stat").textContent = miss ? `${miss} mot(s) sans pictogramme : touchez-les pour en ajouter un.` : "";
+  renderFS();
+}
+// Reconnaissance vocale : la parole devient du texte, donc des pictogrammes
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let rec=null, listening=false, baseText="";
+function setMic(){ ["mic","fsmic"].forEach(id=>{const b=$(id); b.textContent=listening?"\u23f9 Arr\u00eater":"\ud83c\udfa4 \u00c9couter"; b.classList.toggle("mic-on",listening);}); }
+function toggleMic(){
+  if(listening){ listening=false; try{rec.stop();}catch(e){} setMic(); return; }
+  if(!SR){ alert("La reconnaissance vocale n\u2019est pas disponible sur ce navigateur. Essayez Chrome (Android ou ordinateur)."); return; }
+  baseText=$("in").value.replace(/\s+$/,"");
+  rec=new SR(); rec.lang="fr-FR"; rec.continuous=true; rec.interimResults=true;
+  rec.onresult=e=>{
+    const parts=Array.from(e.results).map(r=>r[0].transcript.trim()).filter(Boolean);
+    $("in").value=(baseText?baseText+"\n":"")+parts.join("\n"); render(); schedule();
+  };
+  rec.onerror=e=>{
+    if(["not-allowed","service-not-allowed","network"].includes(e.error)){ listening=false; setMic();
+      alert(e.error==="network"?"Pas de connexion : la reconnaissance vocale en a besoin.":"Autorisez le micro dans votre navigateur pour utiliser cette fonction."); }
+  };
+  rec.onend=()=>{ if(listening){ try{ baseText=$("in").value.replace(/\s+$/,""); rec.start(); }catch(x){ listening=false; setMic(); } } };
+  listening=true; setMic();
+  try{ rec.start(); }catch(e){ listening=false; setMic(); }
+}
+$("mic").onclick=toggleMic; $("fsmic").onclick=toggleMic;
+// Plein \u00e9cran : la phrase en tr\u00e8s grand
+let wl=null;
+function renderFS(){
+  const o=$("fs"); if(o.hidden)return;
+  const out=$("fsout"); out.innerHTML="";
+  const n=Math.max(1,rows.reduce((a,r)=>a+r.length,0));
+  let w=Math.sqrt(((innerWidth-24)*(innerHeight-90))/(n*1.55+rows.length*.5)); w=Math.max(80,Math.min(300,w));
+  out.style.setProperty("--w",w+"px");
+  rows.forEach(r=>{const rd=document.createElement("div"); rd.className="ln"+(r.length?"":" gap");
+    r.forEach(wd=>{const b=card(wd); b.onclick=null; rd.appendChild(b);}); out.appendChild(rd);});
+}
+function openFS(){ $("fs").hidden=false; renderFS();
+  try{ const q=$("fs").requestFullscreen&&$("fs").requestFullscreen(); if(q&&q.catch)q.catch(()=>{}); }catch(e){}
+  try{ navigator.wakeLock&&navigator.wakeLock.request("screen").then(l=>wl=l).catch(()=>{}); }catch(e){} }
+function closeFS(){ $("fs").hidden=true; try{ if(document.fullscreenElement)document.exitFullscreen(); }catch(e){} try{ wl&&wl.release(); wl=null; }catch(e){} }
+$("full").onclick=openFS; $("fsx").onclick=closeFS;
+document.addEventListener("fullscreenchange",()=>{ if(!document.fullscreenElement) closeFS(); });
+document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeFS(); });
+addEventListener("resize",renderFS);
+// Image de la phrase (WhatsApp, SMS, mail, impression)
+const loadImg = u => new Promise(ok=>{const i=new Image(); i.crossOrigin="anonymous"; i.onload=()=>ok(i); i.onerror=()=>ok(null); i.src=u;});
+function rr(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();}
+async function makeImage(){
+  const W=1400,PAD=44,CW=220,TH=180,G=26,cap=$("cap").checked,CH=TH+(cap?52:0),RG=30;
+  const cols=Math.max(1,Math.floor((W-2*PAD+G)/(CW+G))), items=[]; let y=PAD;
+  rows.forEach(r=>{
+    if(!r.length){ y+=RG; return; }
+    for(let k=0;k<r.length;k+=cols){
+      const part=r.slice(k,k+cols), lw=part.length*(CW+G)-G, x0=(W-lw)/2;
+      part.forEach((w,j)=>items.push({w,x:x0+j*(CW+G),y}));
+      y+=CH+RG;
+    }
+  });
+  const H=Math.max(y-RG+PAD,200);
+  await Promise.all(items.map(async it=>{ it.p=lookup(it.w); it.img=(it.p&&it.p.t==="i")?await loadImg(it.p.v):null; }));
+  const cv=document.createElement("canvas"); cv.width=W; cv.height=H; const c=cv.getContext("2d");
+  c.fillStyle="#fff"; c.fillRect(0,0,W,H); c.textAlign="center"; c.textBaseline="middle";
+  items.forEach(it=>{
+    const {x,y,p}=it; rr(c,x,y,CW,TH,22); c.fillStyle="#fff"; c.fill();
+    c.lineWidth=4; c.strokeStyle="#cdd7e5"; c.setLineDash(p?[]:[10,8]); c.stroke(); c.setLineDash([]);
+    if(it.img){ const m=14, s=Math.min((CW-2*m)/it.img.width,(TH-2*m)/it.img.height); const w=it.img.width*s,h=it.img.height*s; c.drawImage(it.img,x+(CW-w)/2,y+(TH-h)/2,w,h); }
+    else if(p&&p.t==="e"){ c.font=`${TH*.55}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`; c.fillStyle="#000"; c.fillText(p.v,x+CW/2,y+TH/2+4); }
+    else { c.font="bold 34px system-ui,sans-serif"; c.fillStyle=p?"#1b2430":"#b45309"; c.fillText(p?it.w:"?",x+CW/2,y+TH/2); }
+    if(cap){ c.font="bold 34px system-ui,sans-serif"; c.fillStyle="#1b2430"; c.fillText(it.w,x+CW/2,y+TH+28,CW+G-4); }
+  });
+  return cv;
+}
+let imgBlob=null;
+$("shareimg").onclick=async()=>{
+  if(!rows.some(r=>r.length)){ alert("\u00c9crivez d\u2019abord une phrase."); return; }
+  const b=$("shareimg"), t=b.textContent; b.textContent="\u2026";
+  try{
+    imgBlob=await new Promise(r=>makeImage().then(cv=>cv.toBlob(r,"image/png")));
+    if(!imgBlob) throw new Error("blob");
+    $("imgp").src=URL.createObjectURL(imgBlob);
+    const f=new File([imgBlob],"phrase-pictogrammes.png",{type:"image/png"});
+    $("imgs").style.display=(navigator.canShare&&navigator.canShare({files:[f]}))?"":"none";
+    $("imgd").showModal();
+  }catch(e){ alert("Impossible de cr\u00e9er l\u2019image."); }
+  b.textContent=t;
+};
+$("imgs").onclick=async()=>{ try{ await navigator.share({files:[new File([imgBlob],"phrase-pictogrammes.png",{type:"image/png"})],title:"Phrase en pictogrammes"}); }catch(e){} };
+$("imgv").onclick=()=>{ const a=document.createElement("a"); a.href=URL.createObjectURL(imgBlob); a.download="phrase-pictogrammes.png"; document.body.appendChild(a); a.click(); a.remove(); };
+$("imgx").onclick=()=>{ $("imgd").close(); try{URL.revokeObjectURL($("imgp").src);}catch(e){} };
+// Déplacer les pictogrammes (souris : glisser ; téléphone : maintenir puis glisser)
+let dg=null, ghost=null, tgt=null;
+const mk=document.createElement("div"); mk.id="mk"; document.body.appendChild(mk);
+function startDrag(){
+  if(!dg||dg.on)return; dg.on=true; const c=dg.c, r=c.getBoundingClientRect();
+  ghost=c.cloneNode(true); ghost.className="c ghost"; ghost.style.width=r.width+"px"; document.body.appendChild(ghost);
+  dg.ox=dg.x-r.left; dg.oy=dg.y-r.top; c.classList.add("drag"); try{navigator.vibrate&&navigator.vibrate(15);}catch(e){}
+  place(dg.x,dg.y);
+}
+function place(x,y){ghost.style.left=(x-dg.ox)+"px";ghost.style.top=(y-dg.oy)+"px";
+  const h=document.elementFromPoint(x,y), tc=h&&h.closest(".c:not(.ghost)"), tl=h&&h.closest(".ln"); tgt=null; mk.style.display="none";
+  if(tc&&tc!==dg.c){const q=tc.getBoundingClientRect(), before=x<q.left+q.width/2;
+    tgt={r:+tc.dataset.r,i:+tc.dataset.i+(before?0:1)}; mk.style.cssText=`display:block;left:${before?q.left-8:q.right+3}px;top:${q.top}px;height:${q.height}px`;}
+  else if(tc===dg.c){tgt=null;}
+  else if(tl){tgt={r:+tl.dataset.r,i:rows[+tl.dataset.r].length};}
+}
+function endDrag(ok){
+  if(!dg)return; clearTimeout(dg.t);
+  if(dg.on){ if(ghost)ghost.remove(); ghost=null; mk.style.display="none"; noClick=Date.now()+450;
+    if(ok&&tgt){ const [w]=rows[dg.r].splice(dg.i,1); let i=tgt.i; if(tgt.r===dg.r&&dg.i<i)i--; rows[tgt.r].splice(i,0,w); }
+    render(); }
+  dg=null; tgt=null;
+}
+$("out").addEventListener("pointerdown",e=>{
+  const c=e.target.closest(".c"); if(!c||(e.pointerType==="mouse"&&e.button!==0))return;
+  dg={c,x:e.clientX,y:e.clientY,on:false,r:+c.dataset.r,i:+c.dataset.i,mouse:e.pointerType==="mouse"};
+  if(!dg.mouse) dg.t=setTimeout(startDrag,380);
+});
+document.addEventListener("pointermove",e=>{
+  if(!dg)return;
+  if(!dg.on){ if(Math.hypot(e.clientX-dg.x,e.clientY-dg.y)>8){ if(dg.mouse)startDrag(); else {clearTimeout(dg.t);dg=null;} } if(!dg||!dg.on)return; }
+  e.preventDefault(); place(e.clientX,e.clientY);
+},{passive:false});
+document.addEventListener("touchmove",e=>{ if(dg&&dg.on) e.preventDefault(); },{passive:false});
+document.addEventListener("pointerup",()=>endDrag(true));
+document.addEventListener("pointercancel",()=>endDrag(false));
+document.addEventListener("contextmenu",e=>{ if(dg&&dg.on) e.preventDefault(); });
+// Mise à jour : vide la mémoire hors ligne et recharge la dernière version
+$("refresh").onclick=async()=>{
+  $("refresh").textContent="…";
+  try{ if(navigator.serviceWorker){const rs=await navigator.serviceWorker.getRegistrations(); await Promise.all(rs.map(r=>r.unregister()));}
+       if(window.caches){const ks=await caches.keys(); await Promise.all(ks.map(k=>caches.delete(k)));} }catch(e){}
+  location.reload();
+};
+// Édition
+let cur=null, curW="", draft=null;
+const SUG="😀 😢 😠 😨 🤕 🍎 🍞 🥛 💧 🏠 🚗 🐶 🐱 ⚽ 📖 ✏️ 👕 👟 🛏️ 🚽 🧼 👋 🙏 ❤️ ✅ ❌ 🛑 ❓ 🕒 🌞 🌧️ 👨 👩 👶 🧸 📱 📺 🎵 🎨 🏫 🛒 🌳 🔑 🚪 🪑".split(" ");
+SUG.forEach(e=>{const b=document.createElement("button");b.textContent=e;b.onclick=()=>{draft={t:"e",v:e};$("emo").value=e;prev();};$("grid").appendChild(b);});
+function prev(){const pv=$("pv");pv.innerHTML="";if(!draft){pv.textContent="?";return;}if(draft.t==="i"){const i=new Image();i.src=draft.v;pv.appendChild(i);}else pv.textContent=draft.v;}
+function edit(w){$("arg").style.display="none";cur=norm(w);curW=w;draft=lookup(w);$("dt").textContent="Pictogramme pour « "+w+" »";$("emo").value=draft&&draft.t==="e"?draft.v:"";prev();$("dlg").showModal();}
+$("emo").oninput=e=>{const v=e.target.value.trim();draft=v?{t:"e",v}:null;prev();};
+$("up").onclick=()=>$("file").click();
+$("file").onchange=e=>{
+  const f=e.target.files[0]; if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{const im=new Image();im.onload=()=>{
+    const s=Math.min(1,256/Math.max(im.width,im.height)),c=document.createElement("canvas");
+    c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);c.getContext("2d").drawImage(im,0,0,c.width,c.height);
+    draft={t:"i",v:c.toDataURL("image/png")};prev();};im.src=r.result;};
+  r.readAsDataURL(f); e.target.value="";
+};
+$("ok").onclick=()=>{if(draft)custom[cur]=draft;else delete custom[cur];save();$("dlg").close();render();};
+$("rst").onclick=()=>{delete custom[cur];failed.add(cur);save();$("dlg").close();render();};
+$("no").onclick=()=>$("dlg").close();
+["in","cap","small","size"].forEach(i=>$(i).addEventListener("input",render));
+
+// Génération automatique d'images (SVG dessiné par Claude) pour les mots inconnus
+let sample=null, pending=new Set(), failed=new Set(), timer=null, busy=false, queue=[];
+const svgUri = s => "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(s);
+async function genSvg(w,ctx){
+  const prompt = `Dessine un pictogramme SVG pour le mot français « ${w} »`+(ctx?` (dans la phrase : « ${ctx.slice(0,200)} »)`:"")+
+  `.\nStyle pictogramme de communication adaptée (type ARASAAC) : une seule image claire et reconnaissable, formes simples et plates, couleurs vives et contrastées, contour épais foncé, centrée, fond transparent.\nContraintes : viewBox=\"0 0 100 100\", xmlns inclus, moins de 2000 caractères, AUCUN texte ni lettre, aucun script.\nRéponds uniquement avec le code SVG, sans explication ni balises markdown.`;
+  const txt = await ask(prompt);
+  const m = txt.match(/<svg[\s\S]*<\/svg>/i);
+  if(!m) throw new Error("pas de svg");
+  let s = m[0].replace(/<script[\s\S]*?<\/script>/gi,"").replace(/<foreignObject[\s\S]*?<\/foreignObject>/gi,"").replace(/<text[\s\S]*?<\/text>/gi,"").replace(/\son\w+\s*=\s*("[^"]*"|'[^']*')/gi,"");
+  if(!/xmlns\s*=/.test(s)) s = s.replace("<svg",'<svg xmlns="http://www.w3.org/2000/svg"');
+  return s;
+}
+// Recherche gratuite dans la banque ARASAAC (fonctionne sur GitHub Pages / en local)
+const picUrl = id => `https://static.arasaac.org/pictograms/${id}/${id}_300.png`;
+async function arasaac(w){
+  for(const q of [w.toLowerCase(), w.toLowerCase().replace(/(s|x)$/,"")]){
+    const r = await fetch("https://api.arasaac.org/v1/pictograms/fr/search/"+encodeURIComponent(q));
+    if(!r.ok) continue;
+    const j = await r.json();
+    if(Array.isArray(j)&&j.length) return j.slice(0,12).map(x=>x._id);
+  }
+  return [];
+}
+async function autoPicto(w){
+  if(canAI()){ try{ return svgUri(await genSvg(w,$("in").value)); }catch(e){} }
+  try{ const ids = await arasaac(w); if(ids.length) return picUrl(ids[0]); }catch(e){}
+  throw new Error("aucune image");
+}
+$("ar").onclick = async()=>{
+  const g=$("arg"); g.style.display="grid"; g.textContent="Recherche…";
+  try{
+    const ids = await arasaac(curW); g.textContent="";
+    if(!ids.length) g.textContent="Aucun résultat.";
+    ids.forEach(id=>{const b=document.createElement("button"),im=new Image();im.src=picUrl(id);b.appendChild(im);
+      b.onclick=()=>{draft={t:"i",v:picUrl(id)};prev();};g.appendChild(b);});
+  }catch(e){ g.textContent="Recherche impossible (hors ligne ou bloquée)."; }
+};
+// IA Claude : via la page Claude (sample) ou via votre propre clé API Anthropic (stockée sur cet appareil uniquement)
+const getKey = () => { try{return localStorage.getItem("picto-key")||"";}catch(e){return "";} };
+const canAI = () => !!sample || !!getKey();
+function updateUI(){
+  $("gn").style.display = canAI() ? "" : "none";
+}
+async function ask(prompt){
+  if(sample){ const r = await sample(prompt,{modelTier:"default",cache:false}); return r.text||""; }
+  const key = getKey(); if(!key) throw new Error("pas de clé");
+  const r = await fetch("https://api.anthropic.com/v1/messages",{method:"POST",
+    headers:{"content-type":"application/json","x-api-key":key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+    body:JSON.stringify({model:"claude-sonnet-5-5",max_tokens:1500,messages:[{role:"user",content:prompt}]})});
+  if(!r.ok){ const e=new Error("API "+r.status); e.code = r.status===401?"not_granted":r.status===429?"rate_limited":"err"; throw e; }
+  const j = await r.json(); return (j.content||[]).map(c=>c.text||"").join("");
+}
+// Thème clair / sombre / auto et mode hors ligne
+const THEMES=["auto","light","dark"], TL={auto:"🌓 Auto",light:"☀️ Clair",dark:"🌙 Sombre"};
+let theme="auto"; try{ theme=localStorage.getItem("picto-theme")||"auto"; }catch(e){}
+function applyTheme(){ const r=document.documentElement; theme==="auto"?r.removeAttribute("data-theme"):r.setAttribute("data-theme",theme); $("theme").textContent=TL[theme]; }
+$("theme").onclick = ()=>{ theme=THEMES[(THEMES.indexOf(theme)+1)%3]; try{localStorage.setItem("picto-theme",theme);}catch(e){} applyTheme(); };
+applyTheme();
+if("serviceWorker" in navigator && /^https?:/.test(location.protocol)) navigator.serviceWorker.register("sw.js").catch(()=>{});
+// Bibliothèque de pictogrammes dessinés (SVG, même style, gratuits et hors ligne)
+const wrap = b => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" stroke="#222" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round">'+b+'</svg>';
+const face = (c,x) => `<circle cx="50" cy="50" r="38" fill="${c}"/><circle cx="37" cy="43" r="4" fill="#222"/><circle cx="63" cy="43" r="4" fill="#222"/>`+x;
+const LIB = {
+boire:'<path d="M28 16h44l-6 70H34z" fill="#e3f2ff"/><path d="M31 46h38l-3 40H34z" fill="#42a5f5"/>',
+eau:'<path d="M50 10C32 36 24 48 24 62a26 26 0 0052 0c0-14-8-26-26-52z" fill="#42a5f5"/><path d="M38 62a12 12 0 0010 12" fill="none" stroke="#fff"/>',
+manger:'<circle cx="60" cy="52" r="30" fill="#fff"/><circle cx="60" cy="52" r="17" fill="#ffd54f"/><path d="M8 18v22M14 18v22M20 18v22M8 40h12M14 40v44" fill="none"/>',
+pomme:'<path d="M50 32C30 18 12 36 22 64c8 20 20 22 28 16 8 6 20 4 28-16 10-28-8-46-28-32z" fill="#e53935"/><path d="M50 32c0-10 3-16 9-21" fill="none"/><path d="M54 20c8-8 20-6 22-2-8 8-18 8-22 2z" fill="#4caf50"/>',
+pain:'<path d="M14 58c-4-24 18-36 36-36s40 12 36 36c-2 14-14 20-36 20S16 72 14 58z" fill="#e0a458"/><path d="M34 34l6 12M50 30l4 14M66 34l-4 12" fill="none"/>',
+lait:'<path d="M30 40l10-24h20l10 24v46H30z" fill="#fff"/><rect x="30" y="50" width="40" height="22" fill="#42a5f5"/>',
+maison:'<path d="M18 48v40h64V48" fill="#ffe08a"/><path d="M8 52L50 14l42 38z" fill="#e57373"/><rect x="42" y="60" width="16" height="28" fill="#a1704a"/>',
+soleil:'<circle cx="50" cy="50" r="20" fill="#ffd54f"/><path d="M50 8v14M50 78v14M8 50h14M78 50h14M20 20l10 10M70 70l10 10M80 20L70 30M30 70L20 80" fill="none" stroke="#f59e0b"/>',
+pluie:'<path d="M26 56a16 16 0 010-32 22 22 0 0142-4 17 17 0 018 36z" fill="#cfd8dc"/><path d="M32 68l-4 12M50 68l-4 12M68 68l-4 12" fill="none" stroke="#42a5f5"/>',
+content:face("#ffd54f",'<path d="M30 58c6 20 34 20 40 0z" fill="#fff"/>'),
+triste:face("#ffd54f",'<path d="M32 72c6-14 30-14 36 0" fill="none"/><path d="M30 52c-3 6-3 10 0 10s3-4 0-10z" fill="#42a5f5"/>'),
+colere:'<circle cx="50" cy="50" r="38" fill="#ef5350"/><path d="M26 32l20 9M74 32L54 41" fill="none"/><circle cx="37" cy="48" r="4" fill="#222"/><circle cx="63" cy="48" r="4" fill="#222"/><path d="M34 72c6-10 26-10 32 0" fill="none"/>',
+dormir:'<rect x="8" y="52" width="84" height="26" rx="4" fill="#90caf9"/><rect x="12" y="40" width="26" height="14" rx="7" fill="#fff"/><path d="M60 14h16L60 32h16" fill="none"/>',
+livre:'<path d="M50 24C38 16 22 16 10 22v58c12-6 28-6 40 2z" fill="#fff"/><path d="M50 24c12-8 28-8 40-2v58c-12-6-28-6-40 2z" fill="#ffe08a"/>',
+coeur:'<path d="M50 86C14 58 10 34 28 24c10-5 18 0 22 8 4-8 12-13 22-8 18 10 14 34-22 62z" fill="#e53935"/>',
+oui:'<circle cx="50" cy="50" r="38" fill="#4caf50"/><path d="M30 52l14 14 28-30" fill="none" stroke="#fff" stroke-width="8"/>',
+non:'<circle cx="50" cy="50" r="38" fill="#e53935"/><path d="M33 33l34 34M67 33L33 67" fill="none" stroke="#fff" stroke-width="8"/>',
+stop:'<path d="M34 10h32l24 24v32L66 90H34L10 66V34z" fill="#e53935"/><path d="M28 50h44" stroke="#fff" stroke-width="9"/>',
+voiture:'<path d="M10 62l8-22 14-12h36l14 14 8 20v10H10z" fill="#42a5f5"/><circle cx="30" cy="72" r="9" fill="#555"/><circle cx="70" cy="72" r="9" fill="#555"/>',
+chat:'<path d="M18 16l18 18-4 14zM82 16L64 34l4 14z" fill="#ffb74d"/><circle cx="50" cy="56" r="32" fill="#ffb74d"/><circle cx="38" cy="52" r="4" fill="#222"/><circle cx="62" cy="52" r="4" fill="#222"/><path d="M50 60v6M44 70c4 4 8 4 12 0M10 60h16M74 60h16" fill="none"/>',
+ballon:'<circle cx="50" cy="50" r="38" fill="#fff"/><path d="M50 34l15 11-6 17H41l-6-17z" fill="#222"/><path d="M50 12v22M65 45l22-6M59 62l12 20M41 62L29 82M35 45L13 39" fill="none"/>',
+toilettes:'<rect x="34" y="14" width="32" height="30" rx="4" fill="#fff"/><path d="M26 48h48c0 22-10 34-24 34S26 70 26 48z" fill="#90caf9"/>',
+laver:'<path d="M18 60a14 14 0 0128-4 16 16 0 0132 6 14 14 0 01-4 28H30a14 14 0 01-12-30z" fill="#e1f5fe"/><circle cx="40" cy="30" r="7" fill="#b3e5fc"/><circle cx="62" cy="22" r="5" fill="#b3e5fc"/>',
+ecole:'<path d="M10 90V40l40-24 40 24v50z" fill="#ffcc80"/><rect x="40" y="60" width="20" height="30" fill="#8d6e63"/><path d="M50 16V4l12 5-12 5" fill="#e53935"/>',
+arbre:'<rect x="44" y="56" width="12" height="34" fill="#8d6e63"/><circle cx="50" cy="38" r="26" fill="#66bb6a"/>',
+fleur:'<g fill="#f48fb1"><circle cx="50" cy="24" r="12"/><circle cx="74" cy="42" r="12"/><circle cx="64" cy="68" r="12"/><circle cx="36" cy="68" r="12"/><circle cx="26" cy="42" r="12"/></g><circle cx="50" cy="48" r="11" fill="#ffd54f"/>',
+chien:'<ellipse cx="22" cy="40" rx="11" ry="20" fill="#8d6e63"/><ellipse cx="78" cy="40" rx="11" ry="20" fill="#8d6e63"/><circle cx="50" cy="54" r="30" fill="#d7ccc8"/><circle cx="39" cy="48" r="4" fill="#222"/><circle cx="61" cy="48" r="4" fill="#222"/><ellipse cx="50" cy="62" rx="7" ry="5" fill="#222"/>',
+oiseau:'<ellipse cx="46" cy="54" rx="30" ry="24" fill="#4fc3f7"/><circle cx="68" cy="42" r="14" fill="#4fc3f7"/><path d="M80 40l14 4-14 6z" fill="#ffb74d"/><circle cx="71" cy="39" r="3" fill="#222"/><path d="M16 56L4 46l4 18z" fill="#4fc3f7"/>',
+poisson:'<ellipse cx="42" cy="50" rx="32" ry="22" fill="#ff8a65"/><path d="M70 50l24-18v36z" fill="#ff8a65"/><circle cx="28" cy="44" r="4" fill="#222"/>',
+lune:'<path d="M64 12a38 38 0 100 76 30 30 0 010-76z" fill="#ffd54f"/>',
+neige:'<path d="M50 10v80M15 30l70 40M15 70l70-40" fill="none" stroke="#42a5f5" stroke-width="6"/>',
+telephone:'<rect x="30" y="10" width="40" height="80" rx="8" fill="#546e7a"/><rect x="35" y="20" width="30" height="52" fill="#b3e5fc"/><circle cx="50" cy="81" r="3" fill="#fff"/>',
+tele:'<rect x="10" y="22" width="80" height="54" rx="6" fill="#546e7a"/><rect x="16" y="28" width="68" height="42" fill="#81d4fa"/><path d="M36 88h28" fill="none"/>',
+musique:'<path d="M38 70V22l40-8v48" fill="none"/><circle cx="30" cy="72" r="10" fill="#222"/><circle cx="70" cy="64" r="10" fill="#222"/>',
+bus:'<rect x="8" y="22" width="84" height="52" rx="8" fill="#fdd835"/><path d="M14 30h72v20H14z" fill="#e1f5fe"/><circle cx="28" cy="76" r="9" fill="#555"/><circle cx="72" cy="76" r="9" fill="#555"/>',
+velo:'<circle cx="24" cy="66" r="18" fill="none"/><circle cx="76" cy="66" r="18" fill="none"/><path d="M24 66l16-30h26l10 30M40 36l16 30M34 28h12M62 28l4 8" fill="none"/>',
+avion:'<path d="M50 8l8 30 34 20v8L58 56l-4 22 12 8v6L50 88l-16 6v-6l12-8-4-22L8 66v-8l34-20z" fill="#90a4ae"/>',
+banane:'<path d="M20 30c8 40 36 56 66 40-4 14-30 22-48 10C22 68 16 48 20 30z" fill="#ffd54f"/>',
+carotte:'<path d="M18 30l52 14-40 44z" fill="#fb8c3c"/><path d="M20 30L8 14M20 30l-4-18M20 30L4 34" stroke="#4caf50" fill="none"/>',
+oeuf:'<path d="M50 12c18 0 28 28 28 46a28 28 0 01-56 0c0-18 10-46 28-46z" fill="#fff8e1"/>',
+fromage:'<path d="M10 50L90 30v40H10z" fill="#ffd54f"/><circle cx="40" cy="55" r="5" fill="#f9a825"/><circle cx="66" cy="48" r="4" fill="#f9a825"/>',
+glace:'<path d="M34 50h32L50 90z" fill="#e0a458"/><circle cx="50" cy="38" r="22" fill="#f48fb1"/>',
+salut:'<rect x="31" y="22" width="9" height="34" rx="4.5" fill="#ffcc80"/><rect x="41" y="14" width="9" height="40" rx="4.5" fill="#ffcc80"/><rect x="51" y="14" width="9" height="40" rx="4.5" fill="#ffcc80"/><rect x="61" y="22" width="9" height="34" rx="4.5" fill="#ffcc80"/><rect x="28" y="46" width="44" height="40" rx="16" fill="#ffcc80"/>',
+question:'<circle cx="50" cy="50" r="38" fill="#7e57c2"/><path d="M36 38c0-18 28-18 28 0 0 12-14 12-14 24" fill="none" stroke="#fff" stroke-width="7"/><circle cx="50" cy="76" r="4.5" fill="#fff" stroke="#fff"/>',
+peur:face("#ce93d8",'<ellipse cx="50" cy="68" rx="9" ry="12" fill="#222"/>'),
+malade:face("#aed581",'<path d="M34 68q8-6 16 0t16 0" fill="none"/>'),
+crayon:'<path d="M16 84l6-20L68 18l14 14L36 78z" fill="#ffd54f"/><path d="M16 84l6-20 14 14z" fill="#ffcc80"/>',
+sac:'<rect x="24" y="26" width="52" height="60" rx="10" fill="#e57373"/><rect x="32" y="52" width="36" height="20" rx="4" fill="#ef9a9a"/><path d="M38 26c0-14 24-14 24 0" fill="none"/>',
+tshirt:'<path d="M34 14l-24 14 10 16 12-6v48h36V38l12 6 10-16L66 14c-4 8-28 8-32 0z" fill="#42a5f5"/>',
+heure:'<circle cx="50" cy="50" r="38" fill="#fff"/><path d="M50 26v26l16 10" fill="none"/>',
+cle:'<circle cx="30" cy="50" r="16" fill="#ffd54f"/><path d="M46 50h44M76 50v14M64 50v10" fill="none"/>',
+porte:'<rect x="26" y="10" width="48" height="80" fill="#a1704a"/><circle cx="64" cy="52" r="4" fill="#ffd54f"/>',
+hopital:'<rect x="12" y="12" width="76" height="76" rx="10" fill="#fff"/><path d="M42 24h16v18h18v16H58v18H42V58H24V42h18z" fill="#e53935"/>',
+travail:'<rect x="12" y="34" width="76" height="52" rx="8" fill="#8d6e63"/><path d="M36 34V22h28v12M12 56h76" fill="none"/><rect x="44" y="52" width="12" height="10" fill="#ffd54f"/>',
+ordinateur:'<rect x="18" y="20" width="64" height="44" rx="4" fill="#546e7a"/><rect x="24" y="26" width="52" height="32" fill="#81d4fa"/><path d="M8 72h84l-6 10H14z" fill="#b0bec5"/>',
+cafe:'<path d="M20 40h50v24a18 18 0 01-18 18H38a18 18 0 01-18-18z" fill="#fff"/><path d="M70 46h8a8 8 0 010 18h-8" fill="none"/><rect x="26" y="44" width="38" height="8" fill="#8d6e63"/><path d="M34 32c-4-6 4-8 0-14M50 32c-4-6 4-8 0-14" fill="none"/>',
+reunion:'<path d="M6 86c0-16 10-26 24-26M94 86c0-16-10-26-24-26" fill="#64b5f6"/><circle cx="26" cy="42" r="11" fill="#ffcc80"/><circle cx="74" cy="42" r="11" fill="#ffcc80"/><path d="M26 90c0-20 10-32 24-32s24 12 24 32z" fill="#42a5f5"/><circle cx="50" cy="34" r="13" fill="#ffb74d"/>',
+danger:'<path d="M50 10L92 84H8z" fill="#ffd54f"/><path d="M50 36v26" stroke-width="7" fill="none"/><circle cx="50" cy="74" r="4" fill="#222"/>',
+probleme:'<circle cx="50" cy="50" r="38" fill="#ef5350"/><path d="M50 26v32" stroke="#fff" stroke-width="9" fill="none"/><circle cx="50" cy="74" r="5" fill="#fff" stroke="#fff"/>',
+casque:'<path d="M14 66a36 36 0 0172 0z" fill="#ffd54f"/><rect x="8" y="66" width="84" height="10" rx="4" fill="#f9a825"/><path d="M50 30v36" fill="none"/>',
+argent:'<circle cx="50" cy="50" r="36" fill="#ffd54f"/><circle cx="50" cy="50" r="26" fill="none"/><path d="M58 38c-8-6-20 0-16 8s16 6 16 14-12 10-20 4M50 30v40" fill="none"/>',
+colis:'<path d="M10 34l40-18 40 18v42L50 92 10 76z" fill="#d7a86e"/><path d="M10 34l40 18 40-18M50 52v40" fill="none"/>',
+clef:'<path d="M70 12a20 20 0 00-18 28L14 78l8 8 38-38a20 20 0 0028-18l-12 10-12-4-4-12z" fill="#90a4ae"/>'
+};
+const libW = {};
+"boire:bois,boit,boire,boisson,verre,buvez|eau:eau|manger:manger,mange,manges,mangeons,mangez,mangent,repas|pomme:pomme|pain:pain,tartine|lait:lait|maison:maison,chez,domicile|soleil:soleil,beau|pluie:pluie,pleut,pleuvoir|content:content,contente,heureux,joyeux,rire|triste:triste,pleurer,pleure|colere:colere,fache,enerve|dormir:dormir,dors,dort,dodo,lit,coucher|livre:livre,lire,lis|coeur:coeur,aimer,aime,amour|oui:oui,ok|non:non|stop:stop,arreter,arrete|voiture:voiture,auto|chat:chat|ballon:ballon,foot,football".split("|").forEach(g=>{const [k,ws]=g.split(":");ws.split(",").forEach(w=>{if(!libW[w])libW[w]=k;});});
+"toilettes:toilettes,wc,pipi,caca|laver:laver,lave,laves,lavons,savon,propre|ecole:ecole,classe,maitresse,professeur,prof|arbre:arbre,parc,jardin,foret|fleur:fleur,fleurs|chien:chien|oiseau:oiseau|poisson:poisson|lune:lune,nuit,soir|neige:neige,froid,hiver|telephone:telephone,portable,tablette,appeler,appelle|tele:television,tele|musique:musique,chanter,chante,chanson,ecouter,ecoute|bus:bus,autobus|velo:velo|avion:avion,voyage|banane:banane|carotte:carotte,legume,legumes|oeuf:oeuf,oeufs|fromage:fromage|glace:glace|salut:bonjour,salut,coucou,bonsoir,aurevoir|question:quoi,comment,pourquoi,qui,quand,ou|peur:peur|malade:malade,fievre,mal,bobo,blesse,douleur|crayon:crayon,ecrire,ecris,dessiner,dessine,dessin|sac:sac,cartable|tshirt:tee-shirt,t-shirt,pull,vetement,habiller,habille|heure:heure,temps,maintenant|cle:cle,ouvrir,ouvre|porte:porte,sortir,sors,sort,entrer,entre|hopital:hopital,docteur,medecin".split("|").forEach(g=>{const [k,ws]=g.split(":");ws.split(",").forEach(w=>{if(!libW[w])libW[w]=k;});});"travail:travail,travailler,travaille,travailles,travaillons,boulot,job,metier,emploi|ordinateur:ordinateur,pc,informatique,ecran,clavier,logiciel|cafe:cafe,the,pause|reunion:reunion,equipe,collegue,collegues|danger:danger,dangereux,attention,risque,prudence,securite|probleme:probleme,problemes,erreur,faute,panne,casse,casser|casque:casque,chantier,epi|argent:argent,salaire,paie,payer,paye,paiement,euro,euros,prix|colis:colis,carton,cartons,paquet,commande,commandes,livraison,livrer,produit,produits,stock|clef:outil,outils,reparer,repare,reparation,maintenance".split("|").forEach(g=>{const [k,ws]=g.split(":");ws.split(",").forEach(w=>{if(!libW[w])libW[w]=k;});});
+
+// Lecture à voix haute et phrases enregistrées
+$("speak").onclick = ()=>{ try{ speechSynthesis.cancel(); const t=$("in").value.trim(); if(!t)return; const u=new SpeechSynthesisUtterance(t); u.lang="fr-FR"; u.rate=.9; speechSynthesis.speak(u); }catch(e){} };
+let phr=[]; try{ phr=JSON.parse(localStorage.getItem("picto-phr")||"[]"); }catch(e){}
+const savePhr = ()=>{ try{ localStorage.setItem("picto-phr",JSON.stringify(phr)); }catch(e){} };
+function renderPhr(){
+  const s=$("saved"); s.innerHTML="";
+  phr.forEach((p,i)=>{
+    const w=document.createElement("span"), a=document.createElement("button"), d=document.createElement("button");
+    a.textContent=p; a.onclick=()=>{$("in").value=p;render();schedule();};
+    d.textContent="✕"; d.title="Supprimer"; d.onclick=()=>{phr.splice(i,1);savePhr();renderPhr();};
+    w.append(a,d); s.appendChild(w);
+  });
+}
+$("savep").onclick = ()=>{ const t=$("in").value.trim(); if(!t||phr.includes(t))return; phr.unshift(t); savePhr(); renderPhr(); };
+renderPhr();
+function schedule(){clearTimeout(timer);timer=setTimeout(autoGen,1200);}
+function autoGen(){
+  if(!$("gen").checked)return;
+  words().forEach(w=>{const k=norm(w);
+    if(!lookup(w)&&!pending.has(k)&&!failed.has(k)&&!queue.some(q=>q.k===k)) queue.push({w,k});});
+  pump();
+}
+async function pump(){
+  if(busy)return; busy=true;
+  while(queue.length){
+    const {w,k}=queue.shift(); pending.add(k); render();
+    try{ custom[k]={t:"i",v:await autoPicto(w),g:1}; save(); }
+    catch(e){ failed.add(k); if(e&&(e.code==="not_granted"||e.code==="rate_limited")){queue=[];pending.delete(k);break;} }
+    pending.delete(k); render();
+  }
+  pending.clear(); busy=false; render();
+}
+$("in").addEventListener("input",schedule);
+$("small").addEventListener("input",schedule);
+$("gen").addEventListener("input",schedule);
+$("gn").onclick=async()=>{
+  if(!canAI())return; $("gn").disabled=true; $("gn").textContent="…";
+  try{draft={t:"i",v:svgUri(await genSvg(curW,$("in").value))};prev();}catch(e){alert("Génération impossible, réessayez.");}
+  $("gn").disabled=false; $("gn").textContent="✨ Générer";
+};
+(async()=>{
+  try{ sample = window.claude ? await claude.use("sample") : null; }catch(e){ sample=null; }
+  updateUI();
+  schedule();
+})();
+$("print").onclick=()=>window.print();
+$("clear").onclick=()=>{$("in").value="";render();$("in").focus();};
+render();
+</script>
+</body>
+</html>
